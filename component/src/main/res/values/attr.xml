@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--圆形加载View-->
+    <declare-styleable name="CircleLoadingView">
+        <attr name="ptWidth" format="float" />
+    </declare-styleable>
+</resources>
