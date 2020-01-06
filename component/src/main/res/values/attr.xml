@@ -4,4 +4,26 @@
     <declare-styleable name="CircleLoadingView">
         <attr name="ptWidth" format="float" />
     </declare-styleable>
+    <!--多样式加载View-->
+    <declare-styleable name="MutiLoadingView">
+        <attr name="mutiloadingview_bg" format="color" />
+        <attr name="mutiloadingview_text_color" format="color" />
+        <attr name="mutiloadingview_status_color" format="color" />
+        <attr name="mutiloadingview_loading_color" format="color" />
+        <attr name="mutiloadingview_loadingwidth" format="dimension" />
+        <attr name="mutiloadingview_loadingheight" format="dimension" />
+        <attr name="mutiloadingview_loadingtext" format="string" />
+        <attr name="mutiloadingview_loadingtext_size" format="dimension" />
+        <attr name="mutiloadingview_loading_style" format="enum">
+            <enum name="normal" value="0" />
+            <enum name="dot" value="1" />
+            <enum name="pillar" value="2" />
+        </attr>
+        <attr name="mutiloadingview_show_status" format="enum">
+            <enum name="loading" value="0" />
+            <enum name="success" value="1" />
+            <enum name="failed" value="2" />
+        </attr>
+    </declare-styleable>
+
 </resources>

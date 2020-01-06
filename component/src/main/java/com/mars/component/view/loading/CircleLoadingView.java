@@ -52,11 +52,9 @@ public class CircleLoadingView extends View {
         super(context, attrs, defStyleAttr);
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.CircleLoadingView);
         ptWidth = ta.getFloat(R.styleable.CircleLoadingView_ptWidth, ptWidth);
-
         ta.recycle();
         initPaint();
     }
-
 
     private void initPaint() {
         mPaint = new Paint();
@@ -94,16 +92,14 @@ public class CircleLoadingView extends View {
         if (hasWindowFocus) {
             if (myHandler == null) {
                 myHandler = new MyHandler(this);
-            } else {
-                myHandler.sendEmptyMessage(0x02);
             }
+            myHandler.sendEmptyMessage(0x02);
         } else {
             if (myHandler == null) {
                 myHandler = new MyHandler(this);
-            } else {
-                myHandler.removeMessages(0x02);
-                myHandler.removeMessages(0x01);
             }
+            myHandler.removeMessages(0x02);
+            myHandler.removeMessages(0x01);
         }
     }
 
