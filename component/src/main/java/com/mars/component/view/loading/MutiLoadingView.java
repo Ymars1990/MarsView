@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.mars.component.R;
+import com.mars.component.annotation.LoadingStatus;
 import com.mars.component.annotation.LoadingStyle;
 import com.mars.component.utils.StringTools;
 
@@ -62,7 +63,7 @@ public class MutiLoadingView extends View {
     private float ptWidth = dip2px(2);
     private float width = DEFAULT_WIDTH;
     private float height = DEFAULT_HEIGHT;
-    private int rotate = 1;
+    private int rotate = 0;
 
     private Paint mPaint;
     private Paint txtPaint;
@@ -174,9 +175,17 @@ public class MutiLoadingView extends View {
         /**
          *绘制文本
          */
+        float radius = Math.min(width, height) / 4 - ptWidth;
+        float offsetY = (StringTools.strIsNotNull(text) ? dip2px(10f) : 0);
         if (StringTools.strIsNotNull(text)) {
-            Log.e(TAG, "文字起始位置:" + (cx - StringTools.mesureText(txtPaint, text)[0] / 2f));
-            canvas.drawText(text, cx - StringTools.mesureText(txtPaint, text)[0] / 2f, cy + StringTools.mesureText(txtPaint, text)[1] / 2f, txtPaint);
+            Log.e(TAG, "文字宽度:" + StringTools.mesureText(txtPaint, text)[0]);
+            if (textSize > DEFAULT_LOADING_LOADINGTEXT_SIZE * 2) {
+                textSize = DEFAULT_LOADING_LOADINGTEXT_SIZE;
+            }
+            txtPaint.setTextSize(textSize);
+            txtPaint.setColor(text_color);
+            Log.e(TAG, String.format("文字起始位置--> X:%s  Y:%s", (cx - StringTools.mesureText(txtPaint, text)[0] / 2f), cy + StringTools.mesureText(txtPaint, text)[1] / 2f));
+            canvas.drawText(text, cx - StringTools.mesureText(txtPaint, text)[0] / 2f, cy + Math.min(width, height) / 4 - ptWidth + dip2px(10f), txtPaint);
         }
         canvas.drawLine(0, cy, width, cy, txtPaint);
         canvas.drawLine(cx, 0, cx, height, txtPaint);
@@ -184,29 +193,78 @@ public class MutiLoadingView extends View {
         if (show_status == 0) {
             switch (style) {
                 case 1:
-                    mPaint.setStyle(Paint.Style.FILL);
-                    mPaint.setColor(loading_color);
+                    mPaint.setStrokeWidth(ptWidth);
                     for (int i = 0; i < 20; i++) {
-                        canvas.rotate(18, cx, cy);
-                        canvas.drawCircle(cx, cy - (Math.min(width, height) / 4 - ptWidth), ptWidth / (rotate / 18 == i ? 1 : 2), mPaint);
+                        mPaint.setColor(rotate / 18 == i ? loading_color : loading_color & 0x99FFFFFF);
+                        canvas.rotate(18, cx, cy - offsetY);
+                        canvas.drawCircle(cx, cy - offsetY - (radius), ptWidth / (rotate / 18 == i ? 1f : 1.5f), mPaint);
                     }
                     break;
                 case 2:
+                    for (int i = 0; i < 20; i++) {
+                        mPaint.setColor(rotate / 18 == i ? loading_color : loading_color & 0x99FFFFFF);
+                        mPaint.setStrokeWidth(ptWidth / (rotate / 18 == i ? 0.5f : 1f));
+                        canvas.rotate(18, cx, cy - offsetY);
+                        canvas.drawLine(cx, cy - offsetY - Math.min(width, height) / 4 + dip2px(7),
+                                cx, cy - offsetY - Math.min(width, height) / 4, mPaint);
+                    }
                     break;
                 case 0:
                 default:
-                    canvas.rotate(rotate, cx, cy);
+                    canvas.rotate(rotate, cx, cy - offsetY);
                     mPaint.setStyle(Paint.Style.STROKE);
+                    mPaint.setStrokeWidth(ptWidth);
                     loadingSweepGradient = new SweepGradient(cx, cy, CIRCLELOADING_BG, null);
                     mPaint.setShader(loadingSweepGradient);
-                    canvas.drawCircle(cx, cy, Math.min(width, height) / 4 - ptWidth, mPaint);
+                    canvas.drawCircle(cx, cy - offsetY, radius, mPaint);
                     break;
             }
         } else {
+            Log.e(TAG, "rotate:" + rotate);
+            if (myHandler != null && rotate == 360) {
+                myHandler.removeMessages(0x02);
+                myHandler.removeMessages(0x01);
+            }
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setStrokeWidth(ptWidth);
+            mPaint.setColor(status_color);
+            canvas.drawCircle(cx, cy - offsetY, radius, mPaint);
+            if (show_status == 1) {
+                //成功 画两条线
+                //第一条线
+                if (rotate / 36 <= 5) {
+                    canvas.drawLine(cx - radius / 3f, cy - offsetY, cx - radius / 3f + radius / 3f * rotate / 36f / 5f, cy - offsetY + radius / 3f * rotate / 36f / 5f, mPaint);
+                } else {
+                    //第二条线
+                    canvas.drawLine(cx - radius / 3f, cy - offsetY, cx, cy - offsetY + radius / 3f, mPaint);
+                    canvas.drawLine(cx, cy - offsetY + radius / 3f * (rotate - 180) / 36 / 7, cx + radius / 1.8f * (rotate - 36 * 3) / 36 / 14, cy - offsetY - radius / 2f * (rotate - 36 * 3) / 36 / 14, mPaint);
+                }
+            } else {
+                //失败 画两条线
+                //第一条线
+                if (rotate / 36 <= 5) {
+                    canvas.drawLine(cx + radius / 3f, cy - offsetY - radius / 3f, cx + radius / 3f - radius * 2 / 3f * (rotate / 36f / 5f), cy - offsetY - radius / 3f + radius * 2 / 3f * (rotate / 36f / 5f), mPaint);
+                } else {
+                    //第二条线
+                    canvas.drawLine(cx + radius / 3f, cy - offsetY - radius / 3f, cx - radius / 3f, cy - offsetY + radius / 3f, mPaint);
+                    canvas.drawLine(cx - radius / 3f, cy - offsetY - radius / 3f, cx - radius / 3f + radius * 2 / 3f * ((rotate - 180) / 36f / 5f),
+                            cy - offsetY - radius / 3f + radius * 2 / 3f * ((rotate - 180) / 36f / 5f), mPaint);
+                }
+            }
 
         }
         canvas.save();
 
+    }
+
+    /**
+     * 设置加载文字
+     */
+    public void setText(String txt) {
+        if (StringTools.strIsNotNull(txt)) {
+            text = txt;
+            postInvalidate();
+        }
     }
 
     /**
@@ -215,10 +273,10 @@ public class MutiLoadingView extends View {
      * @param statusTxt
      * @param status
      */
-    public void setStatus(String statusTxt, int status) {
+    public void setStatus(String statusTxt, LoadingStatus status) {
         if (StringTools.strIsNotNull(statusTxt)) {
             text = statusTxt;
-            show_status = status;
+            show_status = status.getStyleValue();
             postInvalidate();
         }
     }
@@ -238,7 +296,7 @@ public class MutiLoadingView extends View {
             MutiLoadingView view = weakReference.get();
             switch (msg.what) {
                 case 0x01:
-                    view.rotate += 18;
+                    view.rotate += (view.show_status == 2 || view.show_status == 1) ? 18 * 2 : 18;
                     if (view.rotate > 360) {
                         view.rotate = 0;
                     }
