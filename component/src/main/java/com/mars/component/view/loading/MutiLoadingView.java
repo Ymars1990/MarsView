@@ -3,8 +3,10 @@ package com.mars.component.view.loading;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.SweepGradient;
 import android.os.Handler;
@@ -29,7 +31,6 @@ import java.lang.ref.WeakReference;
  */
 public class MutiLoadingView extends View {
     private final static String TAG = MutiLoadingView.class.getSimpleName();
-
     /**
      * 默认值设置
      */
@@ -191,8 +192,9 @@ public class MutiLoadingView extends View {
             Log.e(TAG, String.format("文字起始位置--> X:%s  Y:%s", (cx - StringTools.mesureText(txtPaint, text)[0] / 2f), cy + StringTools.mesureText(txtPaint, text)[1] / 2f));
             canvas.drawText(text, cx - StringTools.mesureText(txtPaint, text)[0] / 2f, cy + Math.min(width, height) / 4 - ptWidth + dip2px(10f), txtPaint);
         }
-        canvas.drawLine(0, cy, width, cy, txtPaint);
-        canvas.drawLine(cx, 0, cx, height, txtPaint);
+        //用于对齐测试
+//        canvas.drawLine(0, cy, width, cy, txtPaint);
+//        canvas.drawLine(cx, 0, cx, height, txtPaint);
 
         if (show_status == LoadingStatus.StatusType.LOADING.getStyleValue()) {
             switch (style) {
@@ -287,21 +289,62 @@ public class MutiLoadingView extends View {
     }
 
     /**
-     * 设置加载状态
+     * 设置文字大小
+     */
+    public void setTextSize(float size) {
+        textSize = size;
+        rotate = 0;
+        myHandler.removeMessages(0x01);
+        myHandler.removeMessages(0x02);
+        myHandler.sendEmptyMessage(0x02);
+    }
+
+    /**
+     * 设置文字大小
+     */
+    public void setText_color(int text_color) {
+        this.text_color = text_color;
+        rotate = 0;
+        myHandler.removeMessages(0x01);
+        myHandler.removeMessages(0x02);
+        myHandler.sendEmptyMessage(0x02);
+    }
+
+    /**
+     * 设置文字大小
+     */
+    public void setStatus_color(int status_color) {
+        this.status_color = status_color;
+        rotate = 0;
+        myHandler.removeMessages(0x01);
+        myHandler.removeMessages(0x02);
+        myHandler.sendEmptyMessage(0x02);
+    }
+
+    /**
+     * 设置加载状态和文字
      *
      * @param statusTxt
      * @param status
      */
     public void setStatus(String statusTxt, LoadingStatus status) {
+        if (StringTools.strIsNotNull(statusTxt)) {
+            text = statusTxt;
+        }
+        setStatus(status);
+    }
+
+    /**
+     * 设置加载状态
+     */
+    public void setStatus(LoadingStatus status) {
         if (myHandler == null) {
             myHandler = new MyHandler(this);
         }
         myHandler.removeMessages(0x01);
         myHandler.removeMessages(0x02);
         Log.e(TAG, status.toString());
-        if (StringTools.strIsNotNull(statusTxt)) {
-            text = statusTxt;
-        }
+
         show_status = status.getStyleValue();
         if (show_status == LoadingStatus.StatusType.LOADING.getStyleValue()) {
             myHandler.sendEmptyMessage(0x02);
@@ -313,6 +356,19 @@ public class MutiLoadingView extends View {
             rotate = 0;
             myHandler.sendEmptyMessage(0x02);
         }
+    }
+
+    /**
+     * 清空画布
+     *
+     * @param canvas
+     */
+    private void clear(Canvas canvas) {
+        Paint paint = new Paint();
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        canvas.drawPaint(paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
+        invalidate();
     }
 
     /**
@@ -379,5 +435,4 @@ public class MutiLoadingView extends View {
         }
         return mySize;
     }
-
 }
