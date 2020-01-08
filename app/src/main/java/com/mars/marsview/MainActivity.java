@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
                     this.sendEmptyMessageDelayed(0x01, 4000);
                     break;
                 case 0x01:
-                    activity.loadingView.setStyle(LoadingStyle.StyleType.DOT);
+                    activity.loadingView.setStyle(LoadingStyle.StyleType.PILLAR);
                     activity.loadingView.setStatus("加载成功!", LoadingStatus.StatusType.SUCCESS);
                     this.sendEmptyMessageDelayed(0x02, 1500);
                     break;
@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                     this.sendEmptyMessageDelayed(0x03, 4000);
                     break;
                 case 0x03:
-                    activity.loadingView.setStyle(LoadingStyle.StyleType.PILLAR);
+                    activity.loadingView.setStyle(LoadingStyle.StyleType.DOT);
                     activity.loadingView.setStatus("加载失败!", LoadingStatus.StatusType.FAILED);
                     this.sendEmptyMessageDelayed(0x04, 1500);
                     break;

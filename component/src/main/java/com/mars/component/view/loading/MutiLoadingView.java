@@ -3,8 +3,8 @@ package com.mars.component.view.loading;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
@@ -44,7 +44,7 @@ public class MutiLoadingView extends View {
     private final float DEFAULT_LOADING_LOADINGWIDTH = DEFAULT_WIDTH / 2;
     private final float DEFAULT_LOADING_LOADINGHEIGHT = DEFAULT_HEIGHT / 2;
     private final String DEFAULT_LOADING_LOADINGTEXT = "加载中";
-    private final float DEFAULT_LOADING_LOADINGTEXT_SIZE = 20f;
+    private final float DEFAULT_LOADING_LOADINGTEXT_SIZE = 24f;
 
     private final int[] CIRCLELOADING_BG = new int[]{0x00FFFFFF, 0x33FFFFFF, 0x66FFFFFF, 0x99FFFFFF, 0xBBFFFFFF, 0xFFFFFFFF};
     private SweepGradient loadingSweepGradient;
@@ -71,6 +71,7 @@ public class MutiLoadingView extends View {
     private Paint txtPaint;
     private Rect rect;
     private MyHandler myHandler;
+    private Path path;
 
     private float cx = width / 2f;
     private float cy = height / 2f;
@@ -200,19 +201,34 @@ public class MutiLoadingView extends View {
             switch (style) {
                 case 1:
                     mPaint.setStrokeWidth(ptWidth);
-                    for (int i = 0; i < 20; i++) {
-                        mPaint.setColor(rotate / 18 == i ? loading_color : loading_color & 0x99FFFFFF);
-                        canvas.rotate(18, cx, cy - offsetY);
-                        canvas.drawCircle(cx, cy - offsetY - (radius), ptWidth / (rotate / 18 == i ? 1f : 1.5f), mPaint);
+                    mPaint.setColor(loading_color);
+                    canvas.rotate(rotate, cx, cy - offsetY);
+                    for (int i = 0; i < 16; i++) {
+                        canvas.save();
+                        mPaint.setAlpha(15 * i);
+                        canvas.rotate(360f / 16f * (i), cx, cy - offsetY);
+                        canvas.drawCircle(cx, cy - offsetY - (radius), ptWidth * (i + 1) / 16, mPaint);
+                        canvas.restore();
                     }
                     break;
                 case 2:
-                    for (int i = 0; i < 20; i++) {
-                        mPaint.setColor(rotate / 18 == i ? loading_color : loading_color & 0x99FFFFFF);
-                        mPaint.setStrokeWidth(ptWidth / (rotate / 18 == i ? 0.5f : 1f));
-                        canvas.rotate(18, cx, cy - offsetY);
-                        canvas.drawLine(cx, cy - offsetY - Math.min(width, height) / 4 + dip2px(7),
-                                cx, cy - offsetY - Math.min(width, height) / 4, mPaint);
+                    mPaint.setColor(loading_color);
+                    mPaint.setStyle(Paint.Style.FILL);
+                    mPaint.setStrokeWidth(ptWidth);
+                    canvas.rotate(rotate, cx, cy - offsetY);
+                    path = new Path();
+                    for (int i = 0; i < 16; i++) {
+                        canvas.save();
+                        mPaint.setStrokeWidth(ptWidth);
+                        mPaint.setAlpha(15 * i);
+                        canvas.rotate(360f / 16f * (i), cx, cy - offsetY);
+                        path.moveTo(cx, cy - offsetY - Math.min(width, height) / 4);
+                        path.quadTo(cx + dip2px(6) / 2, cy - offsetY - Math.min(width, height) / 4 + dip2px(10) / 2f, cx, cy - offsetY - Math.min(width, height) / 4 + dip2px(10));
+                        canvas.drawPath(path, mPaint);
+                        path.moveTo(cx, cy - offsetY - Math.min(width, height) / 4);
+                        path.quadTo(cx - dip2px(6) / 2, cy - offsetY - Math.min(width, height) / 4 + dip2px(10) / 2f, cx, cy - offsetY - Math.min(width, height) / 4 + dip2px(10));
+                        canvas.drawPath(path, mPaint);
+                        canvas.restore();
                     }
                     break;
                 case 0:
@@ -226,7 +242,6 @@ public class MutiLoadingView extends View {
                     break;
             }
         } else if (show_status == LoadingStatus.StatusType.DISMISS.getStyleValue()) {
-            canvas.drawColor(bg, PorterDuff.Mode.CLEAR);
         } else {
             Log.e(TAG, "rotate:" + rotate);
             if (myHandler != null && rotate == 360) {
@@ -260,8 +275,6 @@ public class MutiLoadingView extends View {
                 }
             }
         }
-        canvas.save();
-
     }
 
     /**
@@ -350,7 +363,6 @@ public class MutiLoadingView extends View {
             myHandler.sendEmptyMessage(0x02);
         } else if (show_status == LoadingStatus.StatusType.DISMISS.getStyleValue()) {
             Log.e(TAG, "无状态");
-            show_status = 0;
             postInvalidate();
         } else {
             rotate = 0;
@@ -392,7 +404,7 @@ public class MutiLoadingView extends View {
                     }
                     view.invalidate();
                     Log.e(TAG, "通知重绘");
-                    this.sendEmptyMessageDelayed(0x01, 80);
+                    this.sendEmptyMessageDelayed(0x01, 50);
                     break;
                 case 0x02:
                     this.sendEmptyMessageDelayed(0x01, 100);
