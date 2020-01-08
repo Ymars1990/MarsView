@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.SweepGradient;
 import android.os.Handler;
@@ -101,7 +102,10 @@ public class MutiLoadingView extends View {
         text = ta.getString(R.styleable.MutiLoadingView_mutiloadingview_loadingtext);
         ta.recycle();
         initPaint();
-        myHandler = new MyHandler(this);
+        if (myHandler == null) {
+            myHandler = new MyHandler(this);
+        }
+        myHandler.sendEmptyMessage(0x02);
     }
 
 
@@ -140,7 +144,7 @@ public class MutiLoadingView extends View {
         Log.e(TAG, "cy:" + cy);
     }
 
-    @Override
+/*    @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
         Log.e(TAG, "获取焦点或失去焦点" + hasWindowFocus);
@@ -156,7 +160,7 @@ public class MutiLoadingView extends View {
             myHandler.removeMessages(0x02);
             myHandler.removeMessages(0x01);
         }
-    }
+    }*/
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -190,7 +194,7 @@ public class MutiLoadingView extends View {
         canvas.drawLine(0, cy, width, cy, txtPaint);
         canvas.drawLine(cx, 0, cx, height, txtPaint);
 
-        if (show_status == 0) {
+        if (show_status == LoadingStatus.StatusType.LOADING.getStyleValue()) {
             switch (style) {
                 case 1:
                     mPaint.setStrokeWidth(ptWidth);
@@ -219,6 +223,8 @@ public class MutiLoadingView extends View {
                     canvas.drawCircle(cx, cy - offsetY, radius, mPaint);
                     break;
             }
+        } else if (show_status == LoadingStatus.StatusType.DISMISS.getStyleValue()) {
+            canvas.drawColor(bg, PorterDuff.Mode.CLEAR);
         } else {
             Log.e(TAG, "rotate:" + rotate);
             if (myHandler != null && rotate == 360) {
@@ -229,17 +235,17 @@ public class MutiLoadingView extends View {
             mPaint.setStrokeWidth(ptWidth);
             mPaint.setColor(status_color);
             canvas.drawCircle(cx, cy - offsetY, radius, mPaint);
-            if (show_status == 1) {
+            if (show_status == LoadingStatus.StatusType.SUCCESS.getStyleValue()) {
                 //成功 画两条线
                 //第一条线
                 if (rotate / 36 <= 5) {
-                    canvas.drawLine(cx - radius / 3f, cy - offsetY, cx - radius / 3f + radius / 3f * rotate / 36f / 5f, cy - offsetY + radius / 3f * rotate / 36f / 5f, mPaint);
+                    canvas.drawLine(cx - radius / 3f - radius / 6f, cy - offsetY, cx - radius / 3f - radius / 6f + radius / 3f * rotate / 36f / 5f, cy - offsetY + radius / 3f * rotate / 36f / 5f, mPaint);
                 } else {
                     //第二条线
-                    canvas.drawLine(cx - radius / 3f, cy - offsetY, cx, cy - offsetY + radius / 3f, mPaint);
-                    canvas.drawLine(cx, cy - offsetY + radius / 3f * (rotate - 180) / 36 / 7, cx + radius / 1.8f * (rotate - 36 * 3) / 36 / 14, cy - offsetY - radius / 2f * (rotate - 36 * 3) / 36 / 14, mPaint);
+                    canvas.drawLine(cx - radius / 3f - radius / 6f, cy - offsetY, cx - radius / 6f, cy - offsetY + radius / 3f, mPaint);
+                    canvas.drawLine(cx - radius / 6f, cy - offsetY + radius / 3f, cx - radius / 6f + radius * 2 / 3f * (rotate - 180) / 36f / 5f, cy - offsetY + radius / 3f - radius * 2 / 3f * (rotate - 180) / 36 / 5, mPaint);
                 }
-            } else {
+            } else if (show_status == LoadingStatus.StatusType.FAILED.getStyleValue()) {
                 //失败 画两条线
                 //第一条线
                 if (rotate / 36 <= 5) {
@@ -251,7 +257,6 @@ public class MutiLoadingView extends View {
                             cy - offsetY - radius / 3f + radius * 2 / 3f * ((rotate - 180) / 36f / 5f), mPaint);
                 }
             }
-
         }
         canvas.save();
 
@@ -260,10 +265,24 @@ public class MutiLoadingView extends View {
     /**
      * 设置加载文字
      */
+    public void setStyle(LoadingStyle style) {
+        this.style = style.getStyleValue();
+        rotate = 0;
+        myHandler.removeMessages(0x01);
+        myHandler.removeMessages(0x02);
+        myHandler.sendEmptyMessage(0x02);
+    }
+
+    /**
+     * 设置加载文字
+     */
     public void setText(String txt) {
         if (StringTools.strIsNotNull(txt)) {
             text = txt;
-            postInvalidate();
+            rotate = 0;
+            myHandler.removeMessages(0x01);
+            myHandler.removeMessages(0x02);
+            myHandler.sendEmptyMessage(0x02);
         }
     }
 
@@ -274,10 +293,25 @@ public class MutiLoadingView extends View {
      * @param status
      */
     public void setStatus(String statusTxt, LoadingStatus status) {
+        if (myHandler == null) {
+            myHandler = new MyHandler(this);
+        }
+        myHandler.removeMessages(0x01);
+        myHandler.removeMessages(0x02);
+        Log.e(TAG, status.toString());
         if (StringTools.strIsNotNull(statusTxt)) {
             text = statusTxt;
-            show_status = status.getStyleValue();
+        }
+        show_status = status.getStyleValue();
+        if (show_status == LoadingStatus.StatusType.LOADING.getStyleValue()) {
+            myHandler.sendEmptyMessage(0x02);
+        } else if (show_status == LoadingStatus.StatusType.DISMISS.getStyleValue()) {
+            Log.e(TAG, "无状态");
+            show_status = 0;
             postInvalidate();
+        } else {
+            rotate = 0;
+            myHandler.sendEmptyMessage(0x02);
         }
     }
 

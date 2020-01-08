@@ -13,53 +13,12 @@
         android:orientation="vertical"
         tools:context=".MainActivity">
 
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@color/colorAccent"
-            android:padding="10dp">
-
-            <com.mars.component.view.loading.CircleLoadingView
-                android:layout_width="100dp"
-                android:layout_height="100dp" />
-        </RelativeLayout>
-
         <com.mars.component.view.loading.MutiLoadingView
-            android:layout_width="200dp"
-            android:layout_height="100dp"
-            android:layout_marginTop="10dp"
-            app:mutiloadingview_loading_style="normal"
-
-            app:mutiloadingview_show_status="success" />
-
-        <com.mars.component.view.loading.MutiLoadingView
-            android:layout_width="200dp"
-            android:layout_height="100dp"
-            android:layout_marginTop="10dp"
-            app:mutiloadingview_loading_style="normal"
-            app:mutiloadingview_loadingtext="请求失败!"
-            app:mutiloadingview_show_status="failed" />
-
-        <com.mars.component.view.loading.MutiLoadingView
-            android:layout_width="200dp"
-            android:layout_height="100dp"
-            android:layout_marginTop="10dp"
-            app:mutiloadingview_loadingtext="测试加载"
-            app:mutiloadingview_loadingtext_size="100sp"
-            app:mutiloadingview_loading_style="dot" />
-
-        <com.mars.component.view.loading.MutiLoadingView
+            android:id="@+id/loadingView"
             android:layout_width="200dp"
             android:layout_height="100dp"
             android:layout_marginTop="10dp"
             app:mutiloadingview_loading_style="normal" />
-
-        <com.mars.component.view.loading.MutiLoadingView
-            android:layout_width="200dp"
-            android:layout_height="100dp"
-            android:layout_marginTop="10dp"
-            app:mutiloadingview_loading_style="pillar" />
-
 
     </LinearLayout>
 </ScrollView>

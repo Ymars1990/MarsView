@@ -23,9 +23,10 @@ public class LoadingStatus {
 
     @Retention(RetentionPolicy.SOURCE)
     public @interface StatusType {
-        LoadingStatus loading = new LoadingStatus(0, "加载中");
-        LoadingStatus success = new LoadingStatus(1, "成功");
-        LoadingStatus failed = new LoadingStatus(2, "失败");
+        LoadingStatus LOADING = new LoadingStatus(0, "加载中");
+        LoadingStatus SUCCESS = new LoadingStatus(1, "成功");
+        LoadingStatus FAILED = new LoadingStatus(2, "失败");
+        LoadingStatus DISMISS = new LoadingStatus(3, "完成");
     }
 
     public int getStyleValue() {
@@ -34,5 +35,13 @@ public class LoadingStatus {
 
     public String getStyleName() {
         return styleName;
+    }
+
+    @Override
+    public String toString() {
+        return "LoadingStatus{" +
+                "styleValue=" + styleValue +
+                ", styleName='" + styleName + '\'' +
+                '}';
     }
 }
